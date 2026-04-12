@@ -2,21 +2,30 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package gennaiolidavidestaffetta;
+package threadrelay;
 
 /**
  *
  * @author gennaioli.davide
  */
 public class Staffetta extends javax.swing.JFrame {
-    
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Staffetta.class.getName());
 
-    /**
-     * Creates new form Staffetta
-     */
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Staffetta.class.getName());
+    ;
+    private int prossimoRunner = 0;
+    private boolean sospeso = false;
+    private Corridori[] corridori = new Corridori[4];
+    private Thread[] threads = new Thread[4];
+    private javax.swing.JProgressBar[] bars;
+    private javax.swing.JLabel[] lblPerc;
+    private javax.swing.JLabel[] lblNome;
+
     public Staffetta() {
         initComponents();
+        jSpinner1.setModel(new javax.swing.SpinnerListModel(new String[]{"Slow", "Regular", "Fast"}));
+        bars = new javax.swing.JProgressBar[]{jProgressBar1, jProgressBar2, jProgressBar3, jProgressBar4};
+        lblPerc = new javax.swing.JLabel[]{lblPercentuale1, lblPercentuale2, lblPercentuale3, lblPercentuale4};
+        lblNome = new javax.swing.JLabel[]{lblConcorrente1, lblConcorrente2, lblConcorrente3, lblConcorrente4};
     }
 
     /**
@@ -64,6 +73,11 @@ public class Staffetta extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         btnAvvia.setText("AVVIA");
+        btnAvvia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAvviaActionPerformed(evt);
+            }
+        });
 
         btnSospendi.setText("SOSPENDI");
         btnSospendi.addActionListener(new java.awt.event.ActionListener() {
@@ -73,6 +87,11 @@ public class Staffetta extends javax.swing.JFrame {
         });
 
         btnRiprendi.setText("RIPRENDI");
+        btnRiprendi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRiprendiActionPerformed(evt);
+            }
+        });
 
         btnFerma.setText("FERMA");
         btnFerma.addActionListener(new java.awt.event.ActionListener() {
@@ -187,12 +206,12 @@ public class Staffetta extends javax.swing.JFrame {
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addGap(15, 15, 15)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jProgressBar2, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jProgressBar3, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jProgressBar4, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(268, Short.MAX_VALUE))
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jProgressBar4, javax.swing.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE)
+                    .addComponent(jProgressBar3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jProgressBar2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -214,12 +233,66 @@ public class Staffetta extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSospendiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSospendiActionPerformed
-        // TODO add your handling code here:
+      for (Corridori c : corridori) {
+        if (c != null) c.setSospeso(true);
+    }
     }//GEN-LAST:event_btnSospendiActionPerformed
 
     private void btnFermaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFermaActionPerformed
         // TODO add your handling code here:
+        for (Corridori c : corridori) {
+            if (c != null) {
+                c.setFermato(true);
+            }
+        }
+        // sblocca eventuali thread sospesi così possono uscire
+        for (Corridori c : corridori) {
+            if (c != null) {
+                c.setSospeso(false);
+            }
+        }
+        Corridori.contatoreThread = 0;
+
     }//GEN-LAST:event_btnFermaActionPerformed
+
+    private void btnAvviaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAvviaActionPerformed
+        // TODO add your handling code here:
+        Corridori.contatoreThread = 0;
+        for (int i = 0; i < 4; i++) {
+            bars[i].setValue(0);
+            lblPerc[i].setText("0%");
+            lblNome[i].setText("-");
+        }
+        avviaRunner(0);
+    }//GEN-LAST:event_btnAvviaActionPerformed
+
+    private void btnRiprendiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRiprendiActionPerformed
+       for (Corridori c : corridori) {
+        if (c != null) c.setSospeso(false);
+    }
+    }//GEN-LAST:event_btnRiprendiActionPerformed
+
+    public int getVelocita() {
+        String v = jSpinner1.getValue().toString();
+        return switch (v) {
+            case "Slow" ->
+                80;
+            case "Fast" ->
+                10;
+            default ->
+                30;
+        };
+    }
+
+    public void avviaRunner(int i) {
+        if (i >= 4) {
+            return;
+        }
+        lblNome[i].setText("Runner " + (i + 1));
+          corridori[i] = new Corridori(bars[i], lblPerc[i], this);
+        threads[i] = new Thread(corridori[i]);
+        threads[i].start();
+    }
 
     /**
      * @param args the command line arguments
