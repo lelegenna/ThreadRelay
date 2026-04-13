@@ -20,14 +20,61 @@ public class Staffetta extends javax.swing.JFrame {
     private javax.swing.JLabel[] lblPerc;
     private javax.swing.JLabel[] lblNome;
 
-    public Staffetta() {
-        initComponents();
-        jSpinner1.setModel(new javax.swing.SpinnerListModel(new String[]{"Slow", "Regular", "Fast"}));
-        bars = new javax.swing.JProgressBar[]{jProgressBar1, jProgressBar2, jProgressBar3, jProgressBar4};
-        lblPerc = new javax.swing.JLabel[]{lblPercentuale1, lblPercentuale2, lblPercentuale3, lblPercentuale4};
-        lblNome = new javax.swing.JLabel[]{lblConcorrente1, lblConcorrente2, lblConcorrente3, lblConcorrente4};
-    }
+  private void aggiungiPainter(javax.swing.JProgressBar bar) {
+    javax.swing.ImageIcon img = new javax.swing.ImageIcon(
+        getClass().getResource("/threadrelay/runner_emoji.png")
+    );
 
+    // forza BasicProgressBarUI invece di Nimbus
+    bar.setUI(new javax.swing.plaf.basic.BasicProgressBarUI() {
+        @Override
+        public void paint(java.awt.Graphics g, javax.swing.JComponent c) {
+            // disegna sfondo
+            g.setColor(java.awt.Color.LIGHT_GRAY);
+            g.fillRect(0, 0, bar.getWidth(), bar.getHeight());
+            
+            // disegna riempimento barra
+            int fillW = (int) ((double) bar.getValue() / bar.getMaximum() * bar.getWidth());
+            g.setColor(new java.awt.Color(100, 149, 237)); // blu
+            g.fillRect(0, 0, fillW, bar.getHeight());
+
+            // disegna bordo
+            g.setColor(java.awt.Color.GRAY);
+            g.drawRect(0, 0, bar.getWidth() - 1, bar.getHeight() - 1);
+
+            // disegna immagine o "Fine"
+            int p = bar.getValue();
+            if (p == 100) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g;
+                g2.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 14));
+                java.awt.FontMetrics fm = g2.getFontMetrics();
+                g2.setColor(java.awt.Color.BLACK);
+                
+            } else {
+                int imgW = 32;
+                int imgH = 32;
+                int x = (int) ((double) p / bar.getMaximum() * (bar.getWidth() - imgW));
+                int y = (bar.getHeight() - imgH) / 2;
+                g.drawImage(img.getImage(), x, y, imgW, imgH, bar);
+            }
+        }
+    });
+}
+
+public Staffetta() {
+    initComponents();
+
+    aggiungiPainter(jProgressBar1);
+    aggiungiPainter(jProgressBar2);
+    aggiungiPainter(jProgressBar3);
+    aggiungiPainter(jProgressBar4);
+
+    jSpinner1.setModel(new javax.swing.SpinnerListModel(new String[]{"Slow", "Regular", "Fast"}));
+
+    bars = new javax.swing.JProgressBar[]{jProgressBar1, jProgressBar2, jProgressBar3, jProgressBar4};
+    lblPerc = new javax.swing.JLabel[]{lblPercentuale1, lblPercentuale2, lblPercentuale3, lblPercentuale4};
+    lblNome = new javax.swing.JLabel[]{lblConcorrente1, lblConcorrente2, lblConcorrente3, lblConcorrente4};
+}
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -132,22 +179,6 @@ public class Staffetta extends javax.swing.JFrame {
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_END);
 
-        lblConcorrente1.setText("jLabel1");
-
-        lblPercentuale1.setText("jLabel2");
-
-        lblConcorrente2.setText("jLabel3");
-
-        lblPercentuale2.setText("jLabel4");
-
-        lblConcorrente3.setText("jLabel5");
-
-        lblPercentuale3.setText("jLabel6");
-
-        lblConcorrente4.setText("jLabel7");
-
-        lblPercentuale4.setText("jLabel8");
-
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -160,21 +191,18 @@ public class Staffetta extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(lblPercentuale2))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(lblConcorrente4)
-                                .addGap(18, 18, 18)
-                                .addComponent(lblPercentuale4))
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(lblConcorrente1)
-                                .addGap(18, 18, 18)
-                                .addComponent(lblPercentuale1))
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(lblConcorrente3)
-                                .addGap(18, 18, 18)
-                                .addComponent(lblPercentuale3)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addComponent(lblConcorrente1)
+                        .addGap(18, 18, 18)
+                        .addComponent(lblPercentuale1)
+                        .addGap(0, 6, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(lblConcorrente4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lblPercentuale4))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(lblConcorrente3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lblPercentuale3))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -195,7 +223,7 @@ public class Staffetta extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblConcorrente4)
                     .addComponent(lblPercentuale4))
-                .addContainerGap(47, Short.MAX_VALUE))
+                .addContainerGap(111, Short.MAX_VALUE))
         );
 
         getContentPane().add(jPanel2, java.awt.BorderLayout.LINE_END);
@@ -211,7 +239,7 @@ public class Staffetta extends javax.swing.JFrame {
                     .addComponent(jProgressBar3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jProgressBar2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(14, Short.MAX_VALUE))
+                .addContainerGap(88, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -233,31 +261,35 @@ public class Staffetta extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSospendiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSospendiActionPerformed
-      for (Corridori c : corridori) {
-        if (c != null) c.setSospeso(true);
-    }
+        for (Corridori c : corridori) {
+            if (c != null) {
+                c.setSospeso(true);
+            }
+        }
     }//GEN-LAST:event_btnSospendiActionPerformed
 
     private void btnFermaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFermaActionPerformed
         // TODO add your handling code here:
+
         for (Corridori c : corridori) {
             if (c != null) {
                 c.setFermato(true);
             }
         }
-        // sblocca eventuali thread sospesi così possono uscire
+
         for (Corridori c : corridori) {
             if (c != null) {
                 c.setSospeso(false);
             }
         }
         Corridori.contatoreThread = 0;
-
+        jSpinner1.setEnabled(true);
     }//GEN-LAST:event_btnFermaActionPerformed
 
     private void btnAvviaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAvviaActionPerformed
         // TODO add your handling code here:
         Corridori.contatoreThread = 0;
+        jSpinner1.setEnabled(false);
         for (int i = 0; i < 4; i++) {
             bars[i].setValue(0);
             lblPerc[i].setText("0%");
@@ -267,9 +299,11 @@ public class Staffetta extends javax.swing.JFrame {
     }//GEN-LAST:event_btnAvviaActionPerformed
 
     private void btnRiprendiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRiprendiActionPerformed
-       for (Corridori c : corridori) {
-        if (c != null) c.setSospeso(false);
-    }
+        for (Corridori c : corridori) {
+            if (c != null) {
+                c.setSospeso(false);
+            }
+        }
     }//GEN-LAST:event_btnRiprendiActionPerformed
 
     public int getVelocita() {
@@ -289,7 +323,7 @@ public class Staffetta extends javax.swing.JFrame {
             return;
         }
         lblNome[i].setText("Runner " + (i + 1));
-          corridori[i] = new Corridori(bars[i], lblPerc[i], this);
+        corridori[i] = new Corridori(bars[i], lblPerc[i], this);
         threads[i] = new Thread(corridori[i]);
         threads[i].start();
     }

@@ -1,10 +1,11 @@
 package threadrelay;
 
 public class Corridori implements Runnable {
+
     private boolean nuovoThreadAvviato = false;
     public static int contatoreThread = 0;
-    private volatile boolean sospeso = false;
-    private volatile boolean fermato = false;
+    private boolean sospeso = false;
+    private boolean fermato = false;
     private javax.swing.JProgressBar progressBar;
     private javax.swing.JLabel lblPercentuale;
     private Staffetta staffetta;
@@ -18,11 +19,14 @@ public class Corridori implements Runnable {
     @Override
     public void run() {
         for (int i = 0; i <= 100; i++) {
-            if (fermato) return;
+            if (fermato) {
+                return;
+            }
 
-            final int p = i;
+            int p = i;
             javax.swing.SwingUtilities.invokeLater(() -> {
                 progressBar.setValue(p);
+                progressBar.repaint();
                 lblPercentuale.setText(p == 100 ? "Fine" : p + "%");
             });
 
@@ -36,17 +40,27 @@ public class Corridori implements Runnable {
 
             synchronized (this) {
                 while (sospeso) {
-                    try { wait(); } catch (InterruptedException e) { return; }
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        return;
+                    }
                 }
             }
 
-            try { Thread.sleep(staffetta.getVelocita()); } catch (InterruptedException e) { return; }
+            try {
+                Thread.sleep(staffetta.getVelocita());
+            } catch (InterruptedException e) {
+                return;
+            }
         }
     }
 
     public synchronized void setSospeso(boolean sospeso) {
         this.sospeso = sospeso;
-        if (!sospeso) notifyAll();
+        if (!sospeso) {
+            notifyAll();
+        }
     }
 
     public void setFermato(boolean fermato) {
