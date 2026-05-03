@@ -1,66 +1,53 @@
 package threadrelay;
 
-public class Corridori implements Runnable {
+/**
+ * ConcreteSubject + Runnable.
+ * Avanza da 0 a 100, notifica gli Observer ad ogni step
+ * e al 90% passa il testimone al runner successivo.
+ */
+public class Corridori extends GestoreNotifiche.Subject implements Runnable {
 
-    private boolean nuovoThreadAvviato = false;
     public static int contatoreThread = 0;
-    private boolean sospeso = false;
-    private boolean fermato = false;
-    private javax.swing.JProgressBar progressBar;
-    private javax.swing.JLabel lblPercentuale;
-    private Staffetta staffetta;
 
-    public Corridori(javax.swing.JProgressBar progressBar, javax.swing.JLabel lblPercentuale, Staffetta staffetta) {
-        this.progressBar = progressBar;
-        this.lblPercentuale = lblPercentuale;
-        this.staffetta = staffetta;
+    private final int       indiceRunner;
+    private final Staffetta staffetta;
+
+    private volatile boolean sospeso            = false;
+    private volatile boolean fermato            = false;
+    private          boolean nuovoThreadAvviato = false;
+
+    public Corridori(int indiceRunner, Staffetta staffetta) {
+        this.indiceRunner = indiceRunner;
+        this.staffetta    = staffetta;
     }
 
     @Override
     public void run() {
         for (int i = 0; i <= 100; i++) {
-            if (fermato) {
-                return;
-            }
+            if (fermato) return;
 
-            int p = i;
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                progressBar.setValue(p);
-                progressBar.repaint();
-                lblPercentuale.setText(p == 100 ? "Fine" : p + "%");
-            });
+            notifyObservers(indiceRunner, i);
 
-            if (i == 90 && !nuovoThreadAvviato) {
+            // Passa il testimone al 90%
+            if (i == 90 && !nuovoThreadAvviato && contatoreThread < 3) {
                 nuovoThreadAvviato = true;
-                if (contatoreThread < 3) {
-                    contatoreThread++;
-                    staffetta.avviaRunner(contatoreThread);
-                }
+                staffetta.avviaRunner(++contatoreThread);
             }
 
             synchronized (this) {
                 while (sospeso) {
-                    try {
-                        wait();
-                    } catch (InterruptedException e) {
-                        return;
-                    }
+                    try { wait(); } catch (InterruptedException e) { return; }
                 }
             }
 
-            try {
-                Thread.sleep(staffetta.getVelocita());
-            } catch (InterruptedException e) {
-                return;
-            }
+            try { Thread.sleep(staffetta.getVelocita()); }
+            catch (InterruptedException e) { return; }
         }
     }
 
     public synchronized void setSospeso(boolean sospeso) {
         this.sospeso = sospeso;
-        if (!sospeso) {
-            notifyAll();
-        }
+        if (!sospeso) notifyAll();
     }
 
     public void setFermato(boolean fermato) {
