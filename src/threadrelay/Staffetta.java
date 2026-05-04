@@ -232,6 +232,7 @@ public class Staffetta extends javax.swing.JFrame {
             lblNome[i].setText("-");
         }
         avviaRunner(0);
+        jSpinner1.setEnabled(false);
     }//GEN-LAST:event_btnAvviaActionPerformed
 
     private void btnSospendiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSospendiActionPerformed
