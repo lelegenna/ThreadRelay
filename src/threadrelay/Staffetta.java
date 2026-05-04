@@ -22,10 +22,13 @@ public class Staffetta extends javax.swing.JFrame {
         initComponents();
         jSpinner1.setModel(new javax.swing.SpinnerListModel(new String[]{"Slow", "Regular", "Fast"}));
 
-        bars        = new javax.swing.JProgressBar[]{ jProgressBar1, jProgressBar2, jProgressBar3, jProgressBar4 };
-        lblPerc     = new javax.swing.JLabel[]{ lblPercentuale1, lblPercentuale2, lblPercentuale3, lblPercentuale4 };
-        lblNome     = new javax.swing.JLabel[]{ lblConcorrente1, lblConcorrente2, lblConcorrente3, lblConcorrente4 };
-        ascoltatore = new GestoreNotifiche.AscoltatoreCorsore(bars, lblPerc);
+        bars    = new javax.swing.JProgressBar[]{ jProgressBar1, jProgressBar2, jProgressBar3, jProgressBar4 };
+        lblPerc = new javax.swing.JLabel[]{ lblPercentuale1, lblPercentuale2, lblPercentuale3, lblPercentuale4 };
+        lblNome = new javax.swing.JLabel[]{ lblConcorrente1, lblConcorrente2, lblConcorrente3, lblConcorrente4 };
+
+        // L'AscoltatoreCorsore aggiunge le JLabel icona direttamente sul parent delle barre
+        ascoltatore = new GestoreNotifiche.AscoltatoreCorsore(
+                bars, lblPerc, "/threadrelay/runner.png", 36);
     }
 
     @SuppressWarnings("unchecked")
@@ -222,13 +225,13 @@ public class Staffetta extends javax.swing.JFrame {
 
     private void btnAvviaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAvviaActionPerformed
         Corridori.contatoreThread = 0;
+        ascoltatore.resetIcone();
         for (int i = 0; i < 4; i++) {
             bars[i].setValue(0);
             lblPerc[i].setText("0%");
             lblNome[i].setText("-");
         }
         avviaRunner(0);
-        jSpinner1.setEnabled(false);
     }//GEN-LAST:event_btnAvviaActionPerformed
 
     private void btnSospendiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSospendiActionPerformed
@@ -244,6 +247,7 @@ public class Staffetta extends javax.swing.JFrame {
             if (c != null) { c.setFermato(true); c.setSospeso(false); }
         }
         Corridori.contatoreThread = 0;
+        ascoltatore.resetIcone();
     }//GEN-LAST:event_btnFermaActionPerformed
 
     public int getVelocita() {
@@ -259,7 +263,7 @@ public class Staffetta extends javax.swing.JFrame {
         if (i >= 4) return;
         lblNome[i].setText("Runner " + (i + 1));
         corridori[i] = new Corridori(i, this);
-        corridori[i].addObserver(ascoltatore);   // registrazione Observer
+        corridori[i].addObserver(ascoltatore);
         threads[i] = new Thread(corridori[i]);
         threads[i].start();
     }
